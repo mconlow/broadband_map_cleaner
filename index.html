@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Image Display and Input</title>
+</head>
+<body>
+  <h1>Image Display and Input</h1>
+  <img id="image" src="" alt="Image">
+  <p id="locationId"></p>
+  <select id="userInput">
+    <option value="correct">Correct</option>
+    <option value="incorrect">Incorrect</option>
+  </select>
+  <button onclick="updateData()">Update</button>
+  <button onclick="getNextRecord()">Next</button>
+
+  <script>
+    const image = document.getElementById("image");
+    const locationIdElement = document.getElementById("locationId");
+    const userInput = document.getElementById("userInput");
+    let records = [];
+    let currentIndex = 0;
+
+    // Fetch records from the server
+    fetch("/records")
+      .then(response => response.json())
+      .then(data => {
+        records = data;
+        displayRecord();
+      });
+
+    // Display the current record
+    function displayRecord() {
+      const record = records[currentIndex];
+      image.src = record.url;
+      locationIdElement.textContent = `Location ID: ${record.location_id}`;
+    }
+
+    // Update the dataset with user input
+    function updateData() {
+      const selectedInput = userInput.value;
+
+      fetch("/update-data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ userInput: selectedInput })
+      }).then(response => {
+        if (response.ok) {
+          // Perform any necessary actions after successful update
+          console.log("Data updated successfully");
+        } else {
+          console.error("Failed to update data");
+        }
+      });
+    }
+
+    // Display the next record
+    function getNextRecord() {
+      currentIndex++;
+      if (currentIndex >= records.length) {
+        currentIndex = 0; // Loop back to the first record
+      }
+      displayRecord();
+    }
+  </script>
+</body>
+</html>
